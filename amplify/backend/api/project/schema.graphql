@@ -1,0 +1,111 @@
+type Project
+  @model
+  @auth(
+    rules: [
+      { allow: owner, operations: [create, read, update, delete] }
+      { allow: owner, ownerField: "editors", operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  """
+  Title of the project.
+  """
+  title: String!
+  """
+  Description of the project.
+  """
+  description: String
+  """
+  True when the project is archived (no more synchronized on devices).
+  """
+  archived: Boolean
+  """
+  Reports of the project
+  """
+  reports: [Report] @connection(keyName: "byProject", fields: ["id"])
+
+  accountId: String
+  editors: [String] @auth(rules: [{ allow: owner, ownerField: "accountId" }])
+
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Report
+  @model
+  @key(name: "byProject", fields: ["projectId", "createdAt"])
+  @auth(
+    rules: [
+      { allow: owner, operations: [create, read, update] }
+      { allow: owner, ownerField: "editors", operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  """
+  Id of related project
+  """
+  projectId: ID!
+  """
+  Number of the report.
+  """
+  number: String
+  """
+  Title of the report
+  """
+  title: String
+  """
+  Related project
+  """
+  project: Project @connection(fields: ["projectId"])
+  """
+  Related remarks
+  """
+  remarks: [Remark] @connection(keyName: "byReport", fields: ["id"])
+
+  editors: [String] @auth(rules: [{ allow: owner, ownerField: "accountId" }])
+
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Remark
+  @model
+  @key(name: "byReport", fields: ["reportId", "createdAt"])
+  @key(name: "byProject", fields: ["projectId", "createdAt"])
+  @auth(
+    rules: [
+      { allow: owner, operations: [create, read, update] }
+      { allow: owner, ownerField: "editors", operations: [read, update] }
+    ]
+  ) {
+  id: ID!
+  """
+  Id of related project
+  """
+  projectId: ID!
+  """
+  Id of related report
+  """
+  reportId: ID!
+  """
+  Title of the report
+  """
+  title: String!
+  """
+  Description of the remark.
+  """
+  description: String
+  """
+  Related project
+  """
+  project: Project @connection(fields: ["projectId"])
+  """
+  Related report
+  """
+  report: Report @connection(fields: ["reportId"])
+
+  editors: [String] @auth(rules: [{ allow: owner, ownerField: "accountId" }])
+
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
